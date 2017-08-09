@@ -44,7 +44,7 @@ export default function ScrollReveal (options = {}) {
 				? deepAssign({}, _config, options)
 				: deepAssign({}, defaults, options)
 		} catch (e) {
-			logger.call(this, 'Instantiation failed.', 'Invalid configuration.', e.message)
+			logger.call(this, 'Instantiation failed.', 'Invalid configuration.', e.stack)
 			return noop
 		}
 
@@ -54,7 +54,7 @@ export default function ScrollReveal (options = {}) {
 				throw new Error('Invalid container.')
 			}
 		} catch (e) {
-			logger.call(this, 'Instantiation failed.', e.message)
+			logger.call(this, 'Instantiation failed.', e.stack)
 			return noop
 		}
 
@@ -97,16 +97,24 @@ export default function ScrollReveal (options = {}) {
  * Static members are available immediately during instantiation,
  * so debugging and browser support details are handled here.
  */
-{
-	ScrollReveal.isSupported = () => transformSupported() && transitionSupported()
+ScrollReveal.isSupported = () => transformSupported() && transitionSupported()
 
-	Object.defineProperty(ScrollReveal, 'debug', {
-		get: () => _debug || false,
-		set: value => {
-			if (typeof value === 'boolean') _debug = value
-		},
-	})
-}
+Object.defineProperty(ScrollReveal, 'debug', {
+	get: () => _debug || false,
+	set: value => {
+		if (typeof Error().stack === 'string') {
+			if (typeof value === 'boolean') {
+				_debug = value
+			}
+		} else {
+			logger.call(
+				ScrollReveal(),
+				'Debug mode failed.',
+				'Your browser does not support stack traces. (Yikes!)'
+			)
+		}
+	},
+})
 
 /**
  * The primary API is comprised
